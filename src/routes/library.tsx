@@ -26,6 +26,11 @@ function LibraryPage() {
           Read <span className="text-primary">faster</span>. Stay focused.
         </h1>
         <p className="mt-2 text-muted-foreground">Everything is stored on this device — no account, no cloud.</p>
+        <div className="mt-4 flex flex-wrap gap-2">
+          <Link to="/paste" className="rounded-md border px-3 py-1.5 text-sm transition-colors hover:border-primary hover:text-primary">Paste &amp; Read</Link>
+          <Link to="/quotes" className="rounded-md border px-3 py-1.5 text-sm transition-colors hover:border-primary hover:text-primary">Saved quotes</Link>
+          <Link to="/train" className="rounded-md border px-3 py-1.5 text-sm transition-colors hover:border-primary hover:text-primary">Schulte warm-up</Link>
+        </div>
       </div>
       <UploadZone />
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
