@@ -12,7 +12,7 @@ import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
-import { AppNav } from "@/components/AppNav";
+import { AppNav, BottomNav } from "@/components/AppNav";
 import { Toaster } from "@/components/ui/sonner";
 import { useSettings } from "@/hooks/use-settings";
 import { seedIfNeeded } from "@/lib/seed";
@@ -140,9 +140,10 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <ThemeSync />
       <AppNav />
-      <main className="mx-auto max-w-6xl px-4 py-8">
+      <main className="mx-auto max-w-6xl px-4 pb-24 pt-6 sm:py-8">
         <Outlet />
       </main>
+      <BottomNav />
       <Toaster />
     </QueryClientProvider>
   );
