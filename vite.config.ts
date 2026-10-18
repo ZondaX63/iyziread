@@ -7,7 +7,7 @@
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 
 // TAURI=1 builds a static SPA (index.html shell) for the desktop/mobile wrappers.
-const isTauri = process.env.TAURI === "1";
+const isTauri = process.env["TAURI"] === "1";
 
 export default defineConfig({
   tanstackStart: {
