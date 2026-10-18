@@ -21,7 +21,7 @@ function ReaderRedirect() {
       const s = await getSettings();
       const id = (s.lastBookId && (await db.books.get(s.lastBookId))?.id) || (await db.books.orderBy("addedAt").first())?.id;
       if (id) navigate({ to: "/reader/$bookId", params: { bookId: id }, replace: true });
-      else navigate({ to: "/", replace: true });
+      else navigate({ to: "/library", replace: true });
     })();
   }, [navigate]);
   return <p className="text-muted-foreground">Opening your last book…</p>;

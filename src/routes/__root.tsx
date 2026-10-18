@@ -6,6 +6,7 @@ import {
   useRouter,
   HeadContent,
   Scripts,
+  useLocation,
   type ErrorComponentProps,
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
@@ -134,6 +135,15 @@ function ThemeSync() {
   return null;
 }
 
+function PageTransition() {
+  const { pathname } = useLocation();
+  return (
+    <div key={pathname.split("/")[1]} className="animate-page">
+      <Outlet />
+    </div>
+  );
+}
+
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   return (
@@ -141,7 +151,7 @@ function RootComponent() {
       <ThemeSync />
       <AppNav />
       <main className="mx-auto max-w-6xl px-4 pb-24 pt-6 sm:py-8">
-        <Outlet />
+        <PageTransition />
       </main>
       <BottomNav />
       <Toaster />

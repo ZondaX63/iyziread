@@ -7,6 +7,7 @@ import { db, updateSettings, type Book } from "@/lib/db";
 import { useSettings } from "@/hooks/use-settings";
 import { useRsvpEngine } from "@/hooks/use-rsvp-engine";
 import { clampWpm, MAX_WPM, MIN_WPM, tokenize } from "@/lib/rsvp";
+import { SessionSummary, type SummaryData } from "@/components/SessionSummary";
 import { RsvpDisplay } from "@/components/reader/RsvpDisplay";
 import { VirtualText } from "@/components/reader/TextViews";
 import { Button } from "@/components/ui/button";
@@ -45,12 +46,12 @@ function ReaderPage() {
   const chap = useLiveQuery(() => (chapter === null ? undefined : db.chapters.get(`${bookId}:${chapter}`)), [bookId, chapter]);
 
   if (book === undefined || chapter === null) return <p className="text-muted-foreground">Loading…</p>;
-  if (!book) return <p>Book not found. <Link to="/" className="text-primary">Back to library</Link></p>;
+  if (!book) return <p>Book not found. <Link to="/library" className="text-primary">Back to library</Link></p>;
 
   return (
     <div className="space-y-5">
       <div data-chrome className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-x-2 gap-y-3 sm:flex sm:flex-wrap sm:gap-3">
-        <Link to="/" className="shrink-0 text-muted-foreground hover:text-foreground" aria-label="Back to library"><ChevronLeft /></Link>
+        <Link to="/library" className="shrink-0 text-muted-foreground hover:text-foreground" aria-label="Back to library"><ChevronLeft /></Link>
         <div className="min-w-0 flex-1">
           <h1 className="truncate text-xl font-bold">{book.title}</h1>
           <p className="text-sm text-muted-foreground">{book.author}</p>
@@ -86,9 +87,12 @@ function ChapterReader({ book, chapter, text, mode, onNextChapter }: { book: Boo
   const chunk = mode === "rsvp" ? s.chunk : 1;
   const initial = book.progress.chapter === chapter ? book.progress.word : 0;
 
+  const [summary, setSummary] = useState<SummaryData | null>(null);
+  const showSummary = s.showSummary;
   const onSession = useCallback(({ durationMs, words: w }: { durationMs: number; words: number }) => {
+    if (showSummary) setSummary({ durationMs, words: w, wpm: Math.round(w / (durationMs / 60000)) });
     db.sessions.add({ date: format(new Date(), "yyyy-MM-dd"), startedAt: Date.now() - durationMs, durationMs, words: w, wpm: Math.round(w / (durationMs / 60000)), bookId: book.id });
-  }, [book.id]);
+  }, [book.id, showSummary]);
 
   const eng = useRsvpEngine(words, { wpm: s.wpm, chunk, punctuation: s.punctuation, initial, onSession });
   const setWpm = (w: number) => updateSettings({ wpm: clampWpm(w) });
@@ -215,6 +219,7 @@ function ChapterReader({ book, chapter, text, mode, onNextChapter }: { book: Boo
           Space play/pause · ←/→ seek 10s · ↑/↓ ±50 WPM · F zen mode {mode === "bionic" && "· click a word to set your position"}
         </p>
       )}
+      {summary && <SessionSummary data={summary} onClose={() => setSummary(null)} />}
       {atEnd && chapter < book.toc.length - 1 && (
         <div className="text-center"><Button onClick={onNextChapter}>Next chapter →</Button></div>
       )}
