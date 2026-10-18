@@ -2,11 +2,12 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useLiveQuery } from "dexie-react-hooks";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { format } from "date-fns";
-import { ChevronLeft, Maximize, Minimize, Pause, Play, RotateCcw, RotateCw } from "lucide-react";
+import { ChevronLeft, Eye, Maximize, Minimize, Pause, Play, Quote as QuoteIcon, RotateCcw, RotateCw } from "lucide-react";
+import { toast } from "sonner";
 import { db, updateSettings, type Book } from "@/lib/db";
 import { useSettings } from "@/hooks/use-settings";
 import { useRsvpEngine } from "@/hooks/use-rsvp-engine";
-import { clampWpm, MAX_WPM, MIN_WPM, tokenize } from "@/lib/rsvp";
+import { clampWpm, EYE_REST_AFTER_MS, EYE_REST_SECONDS, formatMinutes, MAX_WPM, minutesLeft, MIN_WPM, sentenceAt, tokenize } from "@/lib/rsvp";
 import { SessionSummary, type SummaryData } from "@/components/SessionSummary";
 import { RsvpDisplay } from "@/components/reader/RsvpDisplay";
 import { VirtualText } from "@/components/reader/TextViews";
@@ -94,7 +95,7 @@ function ChapterReader({ book, chapter, text, mode, onNextChapter }: { book: Boo
     db.sessions.add({ date: format(new Date(), "yyyy-MM-dd"), startedAt: Date.now() - durationMs, durationMs, words: w, wpm: Math.round(w / (durationMs / 60000)), bookId: book.id });
   }, [book.id, showSummary]);
 
-  const eng = useRsvpEngine(words, { wpm: s.wpm, chunk, punctuation: s.punctuation, initial, onSession });
+  const eng = useRsvpEngine(words, { wpm: s.wpm, chunk, punctuation: s.punctuation, ramp: s.rampUp, initial, onSession });
   const setWpm = (w: number) => updateSettings({ wpm: clampWpm(w) });
 
   // persist progress
@@ -105,6 +106,38 @@ function ChapterReader({ book, chapter, text, mode, onNextChapter }: { book: Boo
     }, 600);
     return () => clearTimeout(t);
   }, [eng.index, chapter, book.id, book.chapterWords, book.totalWords]);
+
+  // 20-20-20 eye rest: after 20 min of continuous reading, pause for a 20s break (skippable)
+  const [rest, setRest] = useState<number | null>(null);
+  const readMs = useRef(0);
+  useEffect(() => {
+    if (!eng.playing || !s.eyeRest) return;
+    const iv = setInterval(() => {
+      readMs.current += 1000;
+      if (readMs.current >= EYE_REST_AFTER_MS) {
+        readMs.current = 0;
+        eng.setPlaying(false);
+        setRest(EYE_REST_SECONDS);
+      }
+    }, 1000);
+    return () => clearInterval(iv);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [eng.playing, s.eyeRest]);
+  useEffect(() => {
+    if (rest === null) return;
+    if (rest <= 0) { setRest(null); toast.success("Eyes rested — press play to continue"); return; }
+    const t = setTimeout(() => setRest((r) => (r === null ? null : r - 1)), 1000);
+    return () => clearTimeout(t);
+  }, [rest]);
+
+  const saveQuote = useCallback(async () => {
+    const text = sentenceAt(words, eng.index);
+    if (!text) return;
+    await db.quotes.add({ bookId: book.id, bookTitle: book.title, author: book.author, text, createdAt: Date.now() });
+    toast.success("Quote saved", { description: text.length > 80 ? text.slice(0, 80) + "…" : text });
+  }, [words, eng.index, book.id, book.title, book.author]);
+  const saveQuoteRef = useRef(saveQuote);
+  saveQuoteRef.current = saveQuote;
 
   const toggleZen = useCallback(() => {
     if (document.fullscreenElement) document.exitFullscreen();
@@ -161,6 +194,7 @@ function ChapterReader({ book, chapter, text, mode, onNextChapter }: { book: Boo
       else if (e.key === "ArrowUp") { e.preventDefault(); setWpm(wpmRef.current + 50); }
       else if (e.key === "ArrowDown") { e.preventDefault(); setWpm(wpmRef.current - 50); }
       else if (e.key === "f" || e.key === "F") toggleZen();
+      else if (e.key === "q" || e.key === "Q") saveQuoteRef.current();
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -169,6 +203,8 @@ function ChapterReader({ book, chapter, text, mode, onNextChapter }: { book: Boo
 
   const atEnd = eng.index >= words.length - 1 && !eng.playing;
   const chunkWords = words.slice(eng.index, eng.index + chunk);
+  const chapterLeft = words.length - eng.index - 1;
+  const bookLeft = chapterLeft + book.chapterWords.slice(chapter + 1).reduce((a, b) => a + b, 0);
 
   return (
     <div ref={box} className={cn("space-y-5 bg-background [html[data-focus]_&]:flex [html[data-focus]_&]:min-h-[85vh] [html[data-focus]_&]:flex-col [html[data-focus]_&]:justify-center", zen && "flex flex-col justify-center p-10")}>
@@ -178,8 +214,14 @@ function ChapterReader({ book, chapter, text, mode, onNextChapter }: { book: Boo
         <div {...touchHandlers}><VirtualText paragraphs={paragraphs} index={eng.index} onSeek={eng.setIndex} mode={mode} playing={eng.playing} /></div>
       )}
 
-      <div data-chrome className="h-1 w-full overflow-hidden rounded bg-muted">
-        <div className="h-full bg-primary transition-[width]" style={{ width: `${((eng.index + 1) / Math.max(1, words.length)) * 100}%` }} />
+      <div data-chrome className="space-y-1.5">
+        <div className="h-1 w-full overflow-hidden rounded bg-muted">
+          <div className="h-full bg-primary transition-[width]" style={{ width: `${((eng.index + 1) / Math.max(1, words.length)) * 100}%` }} />
+        </div>
+        <p className="flex justify-between text-xs text-muted-foreground tabular-nums">
+          <span>Chapter: {formatMinutes(minutesLeft(chapterLeft, s.wpm))} left</span>
+          <span>Book: {formatMinutes(minutesLeft(bookLeft, s.wpm))} left</span>
+        </p>
       </div>
 
       <div className="flex flex-wrap items-center justify-center gap-3 rounded-xl border bg-card p-4">
@@ -190,7 +232,9 @@ function ChapterReader({ book, chapter, text, mode, onNextChapter }: { book: Boo
         <Button variant="ghost" size="icon" onClick={() => eng.seekSeconds(10)} aria-label="Forward 10 seconds"><RotateCw /></Button>
 
         <div className="flex min-w-64 flex-1 items-center gap-3 px-2">
-          <span className="w-20 text-right font-display text-sm font-bold tabular-nums text-primary">{s.wpm} WPM</span>
+          <span className="w-24 text-right font-display text-sm font-bold tabular-nums text-primary" title={s.rampUp ? "Warm-up ramp on" : undefined}>
+            {eng.playing && s.rampUp && eng.liveWpm < s.wpm ? `${eng.liveWpm}→${s.wpm}` : `${s.wpm} WPM`}
+          </span>
           <Slider min={MIN_WPM} max={MAX_WPM} step={10} value={[s.wpm]} onValueChange={([v]) => setWpm(v ?? s.wpm)} />
         </div>
         <div data-chrome className="flex gap-1">
@@ -206,6 +250,7 @@ function ChapterReader({ book, chapter, text, mode, onNextChapter }: { book: Boo
             ))}
           </div>
         )}
+        <Button variant="ghost" size="icon" onClick={saveQuote} aria-label="Save current sentence as quote" title="Save quote (Q)"><QuoteIcon /></Button>
         <Button variant="ghost" size="icon" onClick={toggleZen} aria-label="Zen mode">{zen ? <Minimize /> : <Maximize />}</Button>
       </div>
 
@@ -216,8 +261,19 @@ function ChapterReader({ book, chapter, text, mode, onNextChapter }: { book: Boo
       )}
       {!zen && (
         <p data-chrome className="hidden text-center text-xs text-muted-foreground sm:block">
-          Space play/pause · ←/→ seek 10s · ↑/↓ ±50 WPM · F zen mode {mode === "bionic" && "· click a word to set your position"}
+          Space play/pause · ←/→ seek 10s · ↑/↓ ±50 WPM · F zen mode · Q save quote · ? all shortcuts {mode === "bionic" && "· click a word to set your position"}
         </p>
+      )}
+      {rest !== null && (
+        <div className="fixed inset-0 z-50 grid place-items-center bg-background/95 p-6 animate-page" role="dialog" aria-label="Eye rest">
+          <div className="max-w-sm text-center">
+            <Eye className="mx-auto h-14 w-14 animate-flicker text-primary" />
+            <h2 className="mt-4 font-display text-2xl font-bold">Rest your eyes</h2>
+            <p className="mt-2 text-muted-foreground">You've read for 20 minutes. Look at something ~6 meters away for 20 seconds.</p>
+            <p className="my-6 font-display text-6xl font-bold tabular-nums text-primary">{rest}</p>
+            <Button variant="outline" onClick={() => setRest(null)}>Skip rest</Button>
+          </div>
+        </div>
       )}
       {summary && <SessionSummary data={summary} onClose={() => setSummary(null)} />}
       {atEnd && chapter < book.toc.length - 1 && (
