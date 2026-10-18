@@ -31,7 +31,7 @@ export function personalBests(sessions: Session[]) {
 export function computeAchievements(sessions: Session[], dailyGoalMin: number): Achievement[] {
   const base = baselineWpm(sessions);
   const later = [...sessions].sort((a, b) => a.startedAt - b.startedAt).slice(3);
-  const beat = (pct: number) => base > 0 && later.some((s) => s.durationMs >= 60000 && s.wpm >= base * (1 + pct));
+  const beat = (pct: number) => base > 0 && later.some((s) => s.durationMs >= 60000 && s.wpm >= Math.round(base * (1 + pct)));
   const minByDay = new Map<string, number>();
   for (const s of sessions) minByDay.set(s.date, (minByDay.get(s.date) ?? 0) + s.durationMs / 60000);
   const goalDays = [...minByDay.values()].filter((m) => m >= dailyGoalMin).length;
