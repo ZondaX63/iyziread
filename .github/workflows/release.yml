@@ -32,12 +32,12 @@ jobs:
         run: bun run build && node scripts/prepare-tauri.mjs
         env: { TAURI: "1" }
       - name: Icons
-        run: bunx @tauri-apps/cli@2 icon src-tauri/app-icon.png
+        run: bun run tauri icon src-tauri/app-icon.png
       - uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tauriScript: bunx @tauri-apps/cli@2
+          tauriScript: bun run tauri
           tagName: ${{ github.ref_type == 'tag' && github.ref_name || 'latest' }}
           releaseName: "Iyzi Reader ${{ github.ref_type == 'tag' && github.ref_name || 'latest' }}"
           releaseBody: "Windows (.exe/.msi), macOS (.dmg), Linux (.AppImage/.deb) ve Android (.apk) indirmeleri aşağıda."
@@ -71,9 +71,9 @@ jobs:
         env: { TAURI: "1" }
       - name: Build APK
         run: |
-          bunx @tauri-apps/cli@2 icon src-tauri/app-icon.png
-          bunx @tauri-apps/cli@2 android init --ci
-          bunx @tauri-apps/cli@2 android build --apk --debug
+          bun run tauri icon src-tauri/app-icon.png
+          bun run tauri android init --ci
+          bun run tauri android build --apk --debug
           mkdir -p out
           find src-tauri/gen/android -name "*.apk" -exec cp {} out/IyziReader-android.apk \;
       - uses: softprops/action-gh-release@v2
