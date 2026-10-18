@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useLiveQuery } from "dexie-react-hooks";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { format } from "date-fns";
 import { ChevronLeft, Maximize, Minimize, Pause, Play, RotateCcw, RotateCw } from "lucide-react";
 import { db, updateSettings, type Book } from "@/lib/db";
@@ -49,19 +49,19 @@ function ReaderPage() {
 
   return (
     <div className="space-y-5">
-      <div className="flex flex-wrap items-center gap-3">
-        <Link to="/" className="text-muted-foreground hover:text-foreground"><ChevronLeft /></Link>
+      <div data-chrome className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-x-2 gap-y-3 sm:flex sm:flex-wrap sm:gap-3">
+        <Link to="/" className="shrink-0 text-muted-foreground hover:text-foreground" aria-label="Back to library"><ChevronLeft /></Link>
         <div className="min-w-0 flex-1">
           <h1 className="truncate text-xl font-bold">{book.title}</h1>
           <p className="text-sm text-muted-foreground">{book.author}</p>
         </div>
         <Select value={String(chapter)} onValueChange={(v) => setChapter(Number(v))}>
-          <SelectTrigger className="w-56"><SelectValue /></SelectTrigger>
+          <SelectTrigger className="col-span-2 w-full sm:w-56"><SelectValue /></SelectTrigger>
           <SelectContent>
             {book.toc.map((t, i) => <SelectItem key={i} value={String(i)}>{t}</SelectItem>)}
           </SelectContent>
         </Select>
-        <div className="flex rounded-lg border p-1">
+        <div className="col-span-2 grid grid-cols-3 rounded-lg border p-1 sm:flex">
           {(["rsvp", "bionic", "pacer"] as Mode[]).map((m) => (
             <button key={m} onClick={() => setMode(m)}
               className={cn("rounded-md px-3 py-1 text-sm capitalize", mode === m ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground")}>
@@ -112,6 +112,39 @@ function ChapterReader({ book, chapter, text, mode, onNextChapter }: { book: Boo
     return () => document.removeEventListener("fullscreenchange", f);
   }, []);
 
+  // Focus mode: hide app chrome while playing; fullscreen on phones; keep screen awake
+  useEffect(() => {
+    const el = document.documentElement;
+    if (!eng.playing) return;
+    el.dataset["focus"] = "1";
+    let lock: { release: () => Promise<void> } | null = null;
+    const nav = navigator as Navigator & { wakeLock?: { request: (t: "screen") => Promise<{ release: () => Promise<void> }> } };
+    nav.wakeLock?.request("screen").then((l) => (lock = l)).catch(() => {});
+    if (window.matchMedia("(max-width: 640px)").matches && !document.fullscreenElement) {
+      el.requestFullscreen?.().catch(() => {});
+    }
+    return () => {
+      delete el.dataset["focus"];
+      lock?.release().catch(() => {});
+    };
+  }, [eng.playing]);
+  useEffect(() => () => {
+    if (document.fullscreenElement === document.documentElement) document.exitFullscreen().catch(() => {});
+  }, []);
+
+  // Touch: tap = play/pause, horizontal swipe = ±10s
+  const touch = useRef<{ x: number; y: number } | null>(null);
+  const touchHandlers = {
+    onTouchStart: (e: React.TouchEvent) => { const t = e.touches[0]; if (t) touch.current = { x: t.clientX, y: t.clientY }; },
+    onTouchEnd: (e: React.TouchEvent) => {
+      const start = touch.current; const t = e.changedTouches[0]; touch.current = null;
+      if (!start || !t) return;
+      const dx = t.clientX - start.x; const dy = t.clientY - start.y;
+      if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5) { e.preventDefault(); eng.seekSeconds(dx < 0 ? 10 : -10); }
+      else if (mode === "rsvp" && Math.abs(dx) < 10 && Math.abs(dy) < 10) { e.preventDefault(); eng.toggle(); }
+    },
+  };
+
   const wpmRef = useRef(s.wpm);
   wpmRef.current = s.wpm;
   useEffect(() => {
@@ -136,12 +169,12 @@ function ChapterReader({ book, chapter, text, mode, onNextChapter }: { book: Boo
   return (
     <div ref={box} className={cn("space-y-5 bg-background", zen && "flex flex-col justify-center p-10")}>
       {mode === "rsvp" ? (
-        <div className={cn("grid place-items-center", zen ? "flex-1" : "py-10")}><RsvpDisplay words={chunkWords} /></div>
+        <div {...touchHandlers} onClick={eng.toggle} className={cn("grid cursor-pointer select-none place-items-center", zen ? "flex-1" : "py-10 [html[data-focus]_&]:min-h-[60vh]")}><RsvpDisplay words={chunkWords} /></div>
       ) : (
-        <VirtualText paragraphs={paragraphs} index={eng.index} onSeek={eng.setIndex} mode={mode} playing={eng.playing} />
+        <div {...touchHandlers}><VirtualText paragraphs={paragraphs} index={eng.index} onSeek={eng.setIndex} mode={mode} playing={eng.playing} /></div>
       )}
 
-      <div className="h-1 w-full overflow-hidden rounded bg-muted">
+      <div data-chrome className="h-1 w-full overflow-hidden rounded bg-muted">
         <div className="h-full bg-primary transition-[width]" style={{ width: `${((eng.index + 1) / Math.max(1, words.length)) * 100}%` }} />
       </div>
 
@@ -156,13 +189,13 @@ function ChapterReader({ book, chapter, text, mode, onNextChapter }: { book: Boo
           <span className="w-20 text-right font-display text-sm font-bold tabular-nums text-primary">{s.wpm} WPM</span>
           <Slider min={MIN_WPM} max={MAX_WPM} step={10} value={[s.wpm]} onValueChange={([v]) => setWpm(v ?? s.wpm)} />
         </div>
-        <div className="flex gap-1">
+        <div data-chrome className="flex gap-1">
           {[200, 400, 600, 800].map((p) => (
             <Button key={p} size="sm" variant={s.wpm === p ? "default" : "outline"} onClick={() => setWpm(p)}>{p}</Button>
           ))}
         </div>
         {mode === "rsvp" && (
-          <div className="flex items-center gap-1 text-sm text-muted-foreground">
+          <div data-chrome className="flex items-center gap-1 text-sm text-muted-foreground">
             Words
             {([1, 2, 3] as const).map((c) => (
               <Button key={c} size="sm" variant={s.chunk === c ? "secondary" : "ghost"} onClick={() => updateSettings({ chunk: c })}>{c}</Button>
@@ -173,7 +206,12 @@ function ChapterReader({ book, chapter, text, mode, onNextChapter }: { book: Boo
       </div>
 
       {!zen && (
-        <p className="text-center text-xs text-muted-foreground">
+        <p data-chrome className="text-center text-xs text-muted-foreground sm:hidden">
+          Tap the word to play/pause · swipe left/right to skip 10s
+        </p>
+      )}
+      {!zen && (
+        <p data-chrome className="hidden text-center text-xs text-muted-foreground sm:block">
           Space play/pause · ←/→ seek 10s · ↑/↓ ±50 WPM · F zen mode {mode === "bionic" && "· click a word to set your position"}
         </p>
       )}
