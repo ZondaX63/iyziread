@@ -2,7 +2,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useLiveQuery } from "dexie-react-hooks";
 import { useMemo } from "react";
 import { format, startOfWeek, addDays } from "date-fns";
-import { BookOpen, Check, Clock, Flame, Gauge, Play, Type } from "lucide-react";
+import { Award, BookOpen, Check, Clock, ClipboardPaste, Flame, Gauge, Grid3x3, Lock, Play, Quote, Timer, Trophy, Type } from "lucide-react";
+import { computeAchievements, personalBests } from "@/lib/achievements";
 import { db } from "@/lib/db";
 import { readingStreak } from "@/lib/stats";
 import { useSettings } from "@/hooks/use-settings";
@@ -58,6 +59,8 @@ function HomePage() {
     };
   }, [sessions]);
 
+  const achievements = useMemo(() => computeAchievements(sessions, s.dailyGoalMin), [sessions, s.dailyGoalMin]);
+  const pb = useMemo(() => personalBests(sessions), [sessions]);
   const goalPct = Math.min(1, d.todayMin / s.dailyGoalMin);
   const R = 52;
   const C = 2 * Math.PI * R;
@@ -159,6 +162,55 @@ function HomePage() {
             <p className="mt-3 font-display text-3xl font-bold"><CountUp value={value} /></p>
             <p className="text-sm text-muted-foreground">{label}</p>
           </div>
+        ))}
+      </div>
+
+      {/* Personal bests */}
+      <section className="animate-fade-up space-y-3" style={{ animationDelay: "420ms" }}>
+        <h2 className="flex items-center gap-2 font-display text-xl font-bold"><Trophy className="h-5 w-5 text-primary" /> Personal bests</h2>
+        <div className="grid grid-cols-3 gap-3">
+          {[
+            { label: "Top speed (1+ min)", value: pb.bestWpm, unit: "WPM", icon: Gauge },
+            { label: "Longest session", value: pb.longestMin, unit: "min", icon: Timer },
+            { label: "Most words in a day", value: pb.mostWordsDay, unit: "words", icon: Type },
+          ].map(({ label, value, unit, icon: Icon }) => (
+            <div key={label} className="rounded-2xl border bg-gradient-to-b from-accent/40 to-card p-4 text-center">
+              <Icon className="mx-auto h-5 w-5 text-primary" />
+              <p className="mt-2 font-display text-2xl font-bold sm:text-3xl"><CountUp value={value} /></p>
+              <p className="text-xs text-muted-foreground">{unit} · {label}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Achievements */}
+      <section className="animate-fade-up space-y-3" style={{ animationDelay: "500ms" }}>
+        <h2 className="flex items-center gap-2 font-display text-xl font-bold">
+          <Award className="h-5 w-5 text-primary" /> Achievements
+          <span className="text-sm font-normal text-muted-foreground">{achievements.filter((a) => a.unlocked).length}/{achievements.length}</span>
+        </h2>
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+          {achievements.map((a, i) => (
+            <div key={a.id} style={{ animationDelay: `${550 + i * 50}ms` }}
+              className={cn("animate-pop rounded-xl border p-3 transition-all", a.unlocked ? "border-primary bg-accent/40 glow" : "bg-card opacity-60")}>
+              {a.unlocked ? <Award className="h-5 w-5 text-primary" /> : <Lock className="h-5 w-5 text-muted-foreground" />}
+              <p className="mt-2 text-sm font-semibold">{a.title}</p>
+              <p className="text-xs text-muted-foreground">{a.desc}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Quick tools */}
+      <div className="grid grid-cols-3 gap-3">
+        {([
+          { to: "/paste", label: "Paste & Read", icon: ClipboardPaste },
+          { to: "/train", label: "Schulte warm-up", icon: Grid3x3 },
+          { to: "/quotes", label: "Saved quotes", icon: Quote },
+        ] as const).map(({ to, label, icon: Icon }) => (
+          <Link key={to} to={to} className="flex flex-col items-center gap-2 rounded-2xl border bg-card p-4 text-center text-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-primary">
+            <Icon className="h-5 w-5 text-primary" />{label}
+          </Link>
         ))}
       </div>
 

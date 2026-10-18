@@ -114,6 +114,42 @@ function SettingsPage() {
           <Switch checked={s.showSummary} onCheckedChange={(v) => updateSettings({ showSummary: v })} />
         </label>
       </Section>
+      <Section title="Training & comfort">
+        <label className="flex items-center justify-between gap-4">
+          <span>
+            Warm-up speed ramp
+            <span className="block text-sm text-muted-foreground">Start at 60% of your speed and climb 10% every 30 seconds</span>
+          </span>
+          <Switch checked={s.rampUp} onCheckedChange={(v) => updateSettings({ rampUp: v })} />
+        </label>
+        <label className="mt-4 flex items-center justify-between gap-4">
+          <span>
+            20-20-20 eye rest
+            <span className="block text-sm text-muted-foreground">After 20 min of reading, pause for a 20s break (you can skip it)</span>
+          </span>
+          <Switch checked={s.eyeRest} onCheckedChange={(v) => updateSettings({ eyeRest: v })} />
+        </label>
+      </Section>
+      <Section title="Daily reminder">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <span>
+            Remind me if I haven't hit my goal
+            <span className="block text-sm text-muted-foreground">Local notification on this device, while the app is open</span>
+          </span>
+          <div className="flex items-center gap-3">
+            <input type="time" value={s.reminderTime} onChange={(e) => updateSettings({ reminderTime: e.target.value })}
+              className="rounded-md border bg-background px-2 py-1 text-sm" />
+            <Switch checked={s.reminder} onCheckedChange={async (v) => {
+              if (v) {
+                if (typeof Notification === "undefined") { toast.error("Notifications aren't supported here"); return; }
+                const p = await Notification.requestPermission();
+                if (p !== "granted") { toast.error("Notification permission was denied"); return; }
+              }
+              updateSettings({ reminder: v });
+            }} />
+          </div>
+        </div>
+      </Section>
       <Section title="Backup">
         <p className="mb-3 text-sm text-muted-foreground">Export books, progress, stats and settings to a file, or restore from one (replaces current data).</p>
         <div className="flex gap-2">

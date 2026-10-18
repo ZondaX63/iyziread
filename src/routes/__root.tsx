@@ -14,6 +14,7 @@ import { useEffect, type ReactNode } from "react";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { AppNav, BottomNav } from "@/components/AppNav";
+import { AchievementWatcher, ReminderWatcher, ShortcutsDialog } from "@/components/GlobalHelpers";
 import { Toaster } from "@/components/ui/sonner";
 import { useSettings } from "@/hooks/use-settings";
 import { seedIfNeeded } from "@/lib/seed";
@@ -155,6 +156,9 @@ function RootComponent() {
       </main>
       <BottomNav />
       <Toaster />
+      <ShortcutsDialog />
+      <AchievementWatcher />
+      <ReminderWatcher />
     </QueryClientProvider>
   );
 }
