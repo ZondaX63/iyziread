@@ -97,7 +97,7 @@ function HomePage() {
         </div>
       </section>
 
-      <div className="grid gap-4 md:grid-cols-[auto_1fr]">
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-4 md:grid-cols-[auto_minmax(0,1fr)]">
         {/* Goal ring */}
         <section className="animate-fade-up flex items-center gap-5 rounded-2xl border bg-card p-5" style={{ animationDelay: "100ms" }}>
           <svg viewBox="0 0 120 120" className="h-28 w-28 shrink-0 -rotate-90">
