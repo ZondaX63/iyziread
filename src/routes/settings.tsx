@@ -141,9 +141,9 @@ function SettingsPage() {
               className="rounded-md border bg-background px-2 py-1 text-sm" />
             <Switch checked={s.reminder} onCheckedChange={async (v) => {
               if (v) {
-                if (typeof Notification === "undefined") return toast.error("Notifications aren't supported here");
+                if (typeof Notification === "undefined") { toast.error("Notifications aren't supported here"); return; }
                 const p = await Notification.requestPermission();
-                if (p !== "granted") return toast.error("Notification permission was denied");
+                if (p !== "granted") { toast.error("Notification permission was denied"); return; }
               }
               updateSettings({ reminder: v });
             }} />
