@@ -167,7 +167,7 @@ function ChapterReader({ book, chapter, text, mode, onNextChapter }: { book: Boo
   const chunkWords = words.slice(eng.index, eng.index + chunk);
 
   return (
-    <div ref={box} className={cn("space-y-5 bg-background", zen && "flex flex-col justify-center p-10")}>
+    <div ref={box} className={cn("space-y-5 bg-background [html[data-focus]_&]:flex [html[data-focus]_&]:min-h-[85vh] [html[data-focus]_&]:flex-col [html[data-focus]_&]:justify-center", zen && "flex flex-col justify-center p-10")}>
       {mode === "rsvp" ? (
         <div {...touchHandlers} onClick={eng.toggle} className={cn("grid cursor-pointer select-none place-items-center", zen ? "flex-1" : "py-10 [html[data-focus]_&]:min-h-[60vh]")}><RsvpDisplay words={chunkWords} /></div>
       ) : (
