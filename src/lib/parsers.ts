@@ -15,7 +15,7 @@ async function parseEpub(file: File): Promise<ParsedBook> {
   const titles = new Map<string, string>();
   const walk = (items: { href: string; label: string; subitems?: unknown[] }[]) =>
     items.forEach((t) => {
-      titles.set(t.href.split("#")[0], t.label.trim());
+      titles.set(t.href.split("#")[0] ?? t.href, t.label.trim());
       if (t.subitems) walk(t.subitems as never);
     });
   walk(nav.toc as never);

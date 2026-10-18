@@ -128,7 +128,7 @@ function ThemeSync() {
     const el = document.documentElement;
     el.classList.remove("dark", "light", "sepia");
     el.classList.add(s.theme);
-    el.dataset.font = s.font;
+    el.dataset["font"] = s.font;
     el.style.setProperty("--orp", s.orpColor);
   }, [s.theme, s.font, s.orpColor]);
   return null;

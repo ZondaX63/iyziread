@@ -8,7 +8,7 @@ function paraOf(paragraphs: Paragraph[], index: number) {
   let hi = paragraphs.length - 1;
   while (lo < hi) {
     const m = (lo + hi + 1) >> 1;
-    if (paragraphs[m].start <= index) lo = m;
+    if (paragraphs[m]!.start <= index) lo = m;
     else hi = m - 1;
   }
   return lo;
@@ -42,7 +42,7 @@ export function VirtualText({ paragraphs, index, onSeek, mode, playing }: Props)
     <div ref={parent} className="h-[62vh] overflow-y-auto rounded-2xl border bg-card px-6">
       <div className="relative w-full" style={{ height: v.getTotalSize() }}>
         {v.getVirtualItems().map((row) => {
-          const p = paragraphs[row.index];
+          const p = paragraphs[row.index]!;
           return (
             <div
               key={row.key}

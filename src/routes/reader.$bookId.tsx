@@ -154,7 +154,7 @@ function ChapterReader({ book, chapter, text, mode, onNextChapter }: { book: Boo
 
         <div className="flex min-w-64 flex-1 items-center gap-3 px-2">
           <span className="w-20 text-right font-display text-sm font-bold tabular-nums text-primary">{s.wpm} WPM</span>
-          <Slider min={MIN_WPM} max={MAX_WPM} step={10} value={[s.wpm]} onValueChange={([v]) => setWpm(v)} />
+          <Slider min={MIN_WPM} max={MAX_WPM} step={10} value={[s.wpm]} onValueChange={([v]) => setWpm(v ?? s.wpm)} />
         </div>
         <div className="flex gap-1">
           {[200, 400, 600, 800].map((p) => (
