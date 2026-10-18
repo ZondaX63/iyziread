@@ -68,7 +68,7 @@ export function useRsvpEngine(words: string[], opts: Opts) {
       cancelAnimationFrame(raf);
       const durationMs = Date.now() - startT;
       const w = idxRef.current - startI;
-      if (durationMs > 3000 && w > 0) optsRef.current.onSession({ durationMs, words: w });
+      if (durationMs > 300 && w > 0) optsRef.current.onSession({ durationMs, words: w });
     };
   }, [playing, words]);
 
