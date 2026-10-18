@@ -88,12 +88,15 @@ function ChapterReader({ book, chapter, text, mode, onNextChapter }: { book: Boo
   const chunk = mode === "rsvp" ? s.chunk : 1;
   const initial = book.progress.chapter === chapter ? book.progress.word : 0;
 
-  const [summary, setSummary] = useState<SummaryData | null>(null);
-  const showSummary = s.showSummary;
+  // Pauses don't end the session: accumulate play segments, finish when leaving the book/chapter.
+  const acc = useRef({ ms: 0, words: 0, startedAt: 0 });
+  const showSummaryRef = useRef(s.showSummary);
+  showSummaryRef.current = s.showSummary;
   const onSession = useCallback(({ durationMs, words: w }: { durationMs: number; words: number }) => {
-    if (showSummary) setSummary({ durationMs, words: w, wpm: Math.round(w / (durationMs / 60000)) });
-    db.sessions.add({ date: format(new Date(), "yyyy-MM-dd"), startedAt: Date.now() - durationMs, durationMs, words: w, wpm: Math.round(w / (durationMs / 60000)), bookId: book.id });
-  }, [book.id, showSummary]);
+    if (!acc.current.startedAt) acc.current.startedAt = Date.now() - durationMs;
+    acc.current.ms += durationMs;
+    acc.current.words += w;
+  }, []);
 
   const eng = useRsvpEngine(words, { wpm: s.wpm, chunk, punctuation: s.punctuation, ramp: s.rampUp, initial, onSession });
   const setWpm = (w: number) => updateSettings({ wpm: clampWpm(w) });
