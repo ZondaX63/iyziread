@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { chunkDelay } from "@/lib/rsvp";
+import { chunkDelay, rampWpm } from "@/lib/rsvp";
 
 interface Opts {
   wpm: number;
   chunk: number;
   punctuation: boolean;
+  ramp?: boolean;
   initial: number;
   onSession: (s: { durationMs: number; words: number }) => void;
 }
@@ -13,6 +14,7 @@ interface Opts {
 export function useRsvpEngine(words: string[], opts: Opts) {
   const [index, setIndexState] = useState(() => Math.min(opts.initial, Math.max(0, words.length - 1)));
   const [playing, setPlaying] = useState(false);
+  const [liveWpm, setLiveWpm] = useState(opts.wpm);
   const idxRef = useRef(index);
   const optsRef = useRef(opts);
   optsRef.current = opts;
@@ -31,16 +33,20 @@ export function useRsvpEngine(words: string[], opts: Opts) {
     let raf = 0;
     let last = performance.now();
     let acc = 0;
+    const playStart = last;
+    let shown = 0;
     const startT = Date.now();
     const startI = idxRef.current;
     const tick = (now: number) => {
       acc += now - last;
       last = now;
       const o = optsRef.current;
+      const wpm = o.ramp ? rampWpm(o.wpm, now - playStart) : o.wpm;
+      if (wpm !== shown) { shown = wpm; setLiveWpm(wpm); }
       let i = idxRef.current;
       let changed = false;
       for (;;) {
-        const d = chunkDelay(words, i, o.chunk, o.wpm, o.punctuation);
+        const d = chunkDelay(words, i, o.chunk, wpm, o.punctuation);
         if (acc < d) break;
         acc -= d;
         changed = true;
@@ -71,5 +77,5 @@ export function useRsvpEngine(words: string[], opts: Opts) {
     [setIndex],
   );
 
-  return { index, playing, setPlaying, toggle: () => setPlaying((p) => !p), setIndex, seekSeconds };
+  return { index, playing, liveWpm, setPlaying, toggle: () => setPlaying((p) => !p), setIndex, seekSeconds };
 }
