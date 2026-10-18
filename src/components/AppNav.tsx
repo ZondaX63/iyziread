@@ -18,10 +18,10 @@ export function AppNav() {
   const s = useSettings();
   const ThemeIcon = icons[s.theme];
   return (
-    <header data-chrome className="sticky top-0 z-30 border-b bg-background/85 backdrop-blur">
+    <header data-chrome className="sticky top-0 z-30 border-b bg-background/85 pt-[env(safe-area-inset-top)] backdrop-blur">
       <div className="mx-auto flex h-14 max-w-6xl items-center gap-2 px-4">
         <Link to="/" className="mr-4 flex items-center gap-2 font-display text-lg font-bold tracking-tight">
-          <span className="grid h-7 w-7 place-items-center rounded-md bg-primary text-primary-foreground glow">i</span>
+          <img src="/favicon.png" alt="" className="h-8 w-8 rounded-md" />
           Iyzi<span className="text-primary">Reader</span>
         </Link>
         <div className="flex-1 sm:hidden" />

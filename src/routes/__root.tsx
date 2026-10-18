@@ -81,7 +81,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   head: () => ({
     meta: [
       { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1" },
+      { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
       { title: "Iyzi Reader — Offline speed reading" },
       { name: "description", content: "Read EPUB and PDF books faster with RSVP, Bionic and Guided Pacer modes. Offline-first." },
       { property: "og:title", content: "Iyzi Reader — Offline speed reading" },

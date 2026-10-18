@@ -76,8 +76,10 @@ jobs:
           CARGO_PROFILE_RELEASE_OPT_LEVEL: "s"
           CARGO_PROFILE_RELEASE_CODEGEN_UNITS: "1"
         run: |
-          bun run tauri icon src-tauri/app-icon.png
           bun run tauri android init --ci
+          bun run tauri icon src-tauri/app-icon.png
+          RES=src-tauri/gen/android/app/src/main/res
+          cp -r src-tauri/icons/android/. "$RES/"
           bun run tauri android build --apk --split-per-abi --target aarch64 --target armv7
       - name: Sign APKs
         run: |
