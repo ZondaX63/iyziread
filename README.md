@@ -1,54 +1,68 @@
-# Iyziread
+# Iyzi Reader
 
-Create a cross-platform, high-performance fast-reading web application named "Iyzi Reader" built with React, Vite, Tailwind CSS, and Shadcn UI, specifically structured to be wrapped with Tauri v2 for native deployment.
+Offline-first speed-reading app. Read EPUB, PDF or pasted text faster with RSVP, Bionic and Guided Pacer modes. All data stays on your device (IndexedDB) — no account, no server, no tracking.
 
-Please implement the features strictly following the MoSCoW priority matrix below:
+## Features
 
-### 1. MUST HAVE (Core Critical Functionality)
-- **Architecture & Offline Storage**: Set up `epubjs` for EPUB parsing, `pdfjs-dist` for PDF text extraction, and `dexie` (IndexedDB) for client-side local book/chapter storage.
-- **Pre-loaded Content**: Include mock data for 2 classic pre-loaded books with table of contents and persistent progress state.
-- **Main App Shell**: Top navigation bar (Library, Reader, Stats, Settings), theme toggler (Dark as default, Light, Sepia), and a Drag-and-drop book upload zone (.epub and .pdf).
-- **Core RSVP Engine**: 
-  - Center-aligned RSVP display box with top/bottom focal guide lines.
-  - **ORP (Optimal Recognition Point)**: Calculate the focal index of each word (~35% character position) and highlight that single anchor letter in bold red (`#ef4444`).
-  - Playback Controls: Play/Pause, 10-second Rewind/Forward, WPM Slider (100–1200 WPM) with quick presets (200, 400, 600, 800 WPM).
-  - High-precision timing loop driven by `requestAnimationFrame` for stutter-free word transitions.
+- **RSVP reader** — ORP focal letter (customizable color, red by default), focal guide lines, 100–1200 WPM, presets 200/400/600/800, 1–3 word chunks, punctuation pacing (comma 1.5x, sentence end 2.0x), drift-free `requestAnimationFrame` timing.
+- **Bionic** and **Guided Pacer** full-text modes (virtualized for long chapters).
+- **Library** — drag-and-drop EPUB/PDF upload, two preloaded classics, table of contents, saved progress.
+- **Paste & Read**, time-to-finish estimates, **saved quotes** (one-tap copy/share).
+- **Motivation** — home dashboard with streak, daily goal ring, personal achievements and bests scaled to your own baseline.
+- **Healthy reading** — optional warm-up speed ramp, Schulte table trainer, 20-20-20 eye-rest breaks (always skippable).
+- **Mobile** — bottom navigation, distraction-free focus mode, tap to play/pause, swipe to seek, screen wake lock.
+- **Stats** — daily reading time, WPM over time, total words.
+- **Settings** — Dark / Light / Sepia themes, fonts incl. OpenDyslexic, reminders, JSON backup export/import.
 
-### 2. SHOULD HAVE (High Priority Features)
-- **Alternative Reader Modes**:
-  - **Bionic Reading Mode**: Render full chapter text bolding the first 30–50% characters of every word.
-  - **Guided Pacer Mode**: Render full text with an animated highlight band moving line-by-line synchronized with the selected WPM speed.
-- **Reading Fine-Tuning**:
-  - Punctuation Pacing: Automatically insert a 1.5x delay on commas and 2.0x delay on sentence endings (`.`, `?`, `!`).
-  - Word Chunking: Toggle option to show 1, 2, or 3 words simultaneously in RSVP mode.
-  - Document Virtualization: Use `@tanstack/react-virtual` for full-text modes to maintain 60 FPS scrolling performance.
-- **Keyboard Shortcuts**: `Space` (Play/Pause), `ArrowLeft`/`ArrowRight` (Seek), `ArrowUp`/`ArrowDown` (+/- 50 WPM), `F` (Fullscreen ZEN mode).
+## Keyboard shortcuts
 
-### 3. COULD HAVE (Secondary Features & Enhancements)
-- **Analytics Dashboard**: Visual charts for daily reading time, average reading speed (WPM progression), and total words read.
-- **Customization**: Custom ORP anchor color picker, font family selection (including OpenDyslexic), and export/import backup for local data.
+| Key | Action |
+| --- | --- |
+| Space | Play / pause |
+| ← / → | Seek 10 s |
+| ↑ / ↓ | ±50 WPM |
+| F | Zen (fullscreen) mode |
+| Q | Save current sentence as quote |
+| ? | Shortcut cheat sheet |
 
-### 4. WON'T HAVE (Out of Scope for Initial Version)
-- Do NOT build any backend API, user authentication, or cloud database integration (keep everything local and offline-first).
-- Do NOT add Text-to-Speech (TTS) audio playback or DRM decryption capabilities.
+## Tech stack
 
-This project was built with [Lovable](https://lovable.dev).
-
-## Build with Lovable
-
-Continue developing this project in the [Lovable editor](https://lovable.dev/projects/022c9d22-dda4-4103-9466-dbcc4d7e453f).
-
-- **Ship faster**: describe what you want to build and Lovable handles the code.
-- **Stay in sync**: every change made in Lovable is committed straight to this repository.
-- **Full ownership**: this code is yours. Push to `main` on GitHub and your changes sync back into Lovable, ready for your next prompt.
+React 19, TanStack Start/Router, Vite, Tailwind CSS v4, shadcn/ui, Dexie (IndexedDB), epubjs, pdfjs-dist, @tanstack/react-virtual, Recharts, Vitest.
 
 ## Development
 
-Prefer working locally? You need Node.js and npm — [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating).
+```sh
+npm install
+npm run dev        # start dev server
+npx vitest run     # run tests
+npm run build      # production build
+```
+
+## Project structure
+
+```
+src/lib/rsvp.ts          pure reading/timing rules (tested)
+src/lib/achievements.ts  personal achievements & bests (tested)
+src/lib/stats.ts         streak logic (tested)
+src/lib/db.ts            Dexie database & backup
+src/lib/parsers.ts       EPUB/PDF parsing (browser-only)
+src/routes/              pages: home, library, reader, paste, quotes, train, stats, settings
+src/components/          UI & reader components
+```
+
+## Desktop & mobile builds (Tauri v2)
+
+The app has no backend, so it can be wrapped with [Tauri v2](https://v2.tauri.app):
 
 ```sh
-git clone <this-repository-url>
-cd <repository-name>
-npm i
-npm run dev
+npm install -D @tauri-apps/cli
+npx tauri init                 # point frontendDist to the built client output
+npx tauri build                # Windows .exe / .msi, macOS, Linux
+npx tauri android init && npx tauri android build   # Android .apk
 ```
+
+Building Windows and Android packages requires the respective toolchains (Rust, MSVC on Windows; Android SDK/NDK for APK).
+
+## License
+
+MIT
