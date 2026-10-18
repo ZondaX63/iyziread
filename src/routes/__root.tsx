@@ -12,6 +12,10 @@ import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
+import { AppNav } from "@/components/AppNav";
+import { Toaster } from "@/components/ui/sonner";
+import { useSettings } from "@/hooks/use-settings";
+import { seedIfNeeded } from "@/lib/seed";
 
 function NotFoundComponent() {
   return (
@@ -45,9 +49,7 @@ function ErrorComponent({ error, reset }: ErrorComponentProps) {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="max-w-md text-center">
-        <h1 className="text-xl font-semibold tracking-tight text-foreground">
-          This page didn't load
-        </h1>
+        <h1 className="text-xl font-semibold tracking-tight text-foreground">This page didn't load</h1>
         <p className="mt-2 text-sm text-muted-foreground">
           Something went wrong on our end. You can try refreshing or head back home.
         </p>
@@ -78,21 +80,23 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
-      { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      { title: "Iyzi Reader — Offline speed reading" },
+      { name: "description", content: "Read EPUB and PDF books faster with RSVP, Bionic and Guided Pacer modes. Offline-first." },
+      { property: "og:title", content: "Iyzi Reader — Offline speed reading" },
+      { property: "og:description", content: "Read EPUB and PDF books faster with RSVP, Bionic and Guided Pacer modes." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:site", content: "@Lovable" },
     ],
     links: [
+      { rel: "stylesheet", href: appCss },
+      { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
+      { rel: "preconnect", href: "https://fonts.googleapis.com" },
+      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
         rel: "stylesheet",
-        href: appCss,
+        href: "https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=JetBrains+Mono:wght@400;700&family=Literata:wght@400;700;800&family=Space+Grotesk:wght@400;600;700&display=swap",
       },
-      { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
+      { rel: "stylesheet", href: "https://fonts.cdnfonts.com/css/opendyslexic" },
     ],
   }),
   shellComponent: RootShell,
@@ -103,7 +107,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" className="dark">
       <head>
         <HeadContent />
       </head>
@@ -115,13 +119,31 @@ function RootShell({ children }: { children: ReactNode }) {
   );
 }
 
+function ThemeSync() {
+  const s = useSettings();
+  useEffect(() => {
+    seedIfNeeded().catch(console.error);
+  }, []);
+  useEffect(() => {
+    const el = document.documentElement;
+    el.classList.remove("dark", "light", "sepia");
+    el.classList.add(s.theme);
+    el.dataset.font = s.font;
+    el.style.setProperty("--orp", s.orpColor);
+  }, [s.theme, s.font, s.orpColor]);
+  return null;
+}
+
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
-
   return (
     <QueryClientProvider client={queryClient}>
-      {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-      <Outlet />
+      <ThemeSync />
+      <AppNav />
+      <main className="mx-auto max-w-6xl px-4 py-8">
+        <Outlet />
+      </main>
+      <Toaster />
     </QueryClientProvider>
   );
 }

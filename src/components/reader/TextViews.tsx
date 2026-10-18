@@ -33,9 +33,10 @@ export function VirtualText({ paragraphs, index, onSeek, mode, playing }: Props)
   const current = paraOf(paragraphs, index);
 
   useEffect(() => {
+    if (mode === "bionic" && playing) return;
     v.scrollToIndex(current, { align: mode === "pacer" ? "center" : "start" });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [current, mode === "pacer" || !playing ? current : -1]);
+  }, [current, mode]);
 
   return (
     <div ref={parent} className="h-[62vh] overflow-y-auto rounded-2xl border bg-card px-6">
