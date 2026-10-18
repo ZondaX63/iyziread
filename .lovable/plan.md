@@ -18,7 +18,7 @@ Top nav bar: Library, Reader (last opened book), Stats, Settings, theme toggler.
 - Shortcuts: Space, Left/Right (seek), Up/Down (±50 WPM), F (fullscreen Zen mode).
 
 ## Design
-Distinctive, focused reading aesthetic: dark ink background, warm off-white text, red accent; serif display font (e.g. Fraunces) + clean body (e.g. Atkinson Hyperlegible); semantic tokens for dark/light/sepia themes.
+Toxic green, black, and gray palette: near-black backgrounds, layered gray surfaces/borders, neon toxic green (~#39FF14) as primary accent for buttons, active nav, sliders, progress and pacer band. ORP anchor stays red `#ef4444` by default (customizable). Display font e.g. Space Grotesk + readable body (Atkinson Hyperlegible). Light and Sepia themes keep green accent on light gray / warm paper backgrounds. All via semantic tokens.
 
 ## Technical details
 - Deps: `epubjs`, `pdfjs-dist`, `dexie`, `dexie-react-hooks`, `@tanstack/react-virtual`, `recharts`, shadcn components.
