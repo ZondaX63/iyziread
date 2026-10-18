@@ -42,6 +42,7 @@ export interface Settings {
   punctuation: boolean;
   chunk: 1 | 2 | 3;
   wpm: number;
+  dailyGoalMin: number;
   lastBookId?: string;
   seeded?: boolean;
 }
@@ -54,6 +55,7 @@ export const DEFAULT_SETTINGS: Settings = {
   punctuation: true,
   chunk: 1,
   wpm: 300,
+  dailyGoalMin: 15,
 };
 
 class IyziDB extends Dexie {

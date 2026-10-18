@@ -39,7 +39,7 @@ export function VirtualText({ paragraphs, index, onSeek, mode, playing }: Props)
   }, [current, mode]);
 
   return (
-    <div ref={parent} className="h-[62vh] overflow-y-auto rounded-2xl border bg-card px-6">
+    <div ref={parent} className="h-[58vh] overflow-y-auto rounded-2xl border bg-card px-4 sm:h-[62vh] sm:px-6 [html[data-focus]_&]:h-[72vh]">
       <div className="relative w-full" style={{ height: v.getTotalSize() }}>
         {v.getVirtualItems().map((row) => {
           const p = paragraphs[row.index]!;
@@ -71,7 +71,7 @@ function ParagraphView({ p, mode, active, index, onSeek }: { p: Paragraph; mode:
   }, [index, active, mode]);
 
   return (
-    <p ref={ref} className={cn("relative font-reader text-xl leading-relaxed", mode === "pacer" && !active && "text-muted-foreground")}>
+    <p ref={ref} className={cn("relative font-reader text-lg leading-relaxed sm:text-xl", mode === "pacer" && !active && "text-muted-foreground")}>
       {band && (
         <span
           aria-hidden

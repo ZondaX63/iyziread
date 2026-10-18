@@ -91,6 +91,13 @@ function SettingsPage() {
           ))}
         </div>
       </Section>
+      <Section title="Daily goal">
+        <div className="flex flex-wrap items-center gap-2">
+          {[5, 10, 15, 30, 60].map((m) => (
+            <Button key={m} size="sm" variant={s.dailyGoalMin === m ? "default" : "outline"} onClick={() => updateSettings({ dailyGoalMin: m })}>{m} min</Button>
+          ))}
+        </div>
+      </Section>
       <Section title="Pacing">
         <label className="flex items-center justify-between gap-4">
           <span>

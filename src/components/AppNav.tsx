@@ -17,7 +17,7 @@ export function AppNav() {
   const s = useSettings();
   const ThemeIcon = icons[s.theme];
   return (
-    <header className="sticky top-0 z-30 border-b bg-background/85 backdrop-blur">
+    <header data-chrome className="sticky top-0 z-30 border-b bg-background/85 backdrop-blur">
       <div className="mx-auto flex h-14 max-w-6xl items-center gap-2 px-4">
         <Link to="/" className="mr-4 flex items-center gap-2 font-display text-lg font-bold tracking-tight">
           <span className="grid h-7 w-7 place-items-center rounded-md bg-primary text-primary-foreground glow">i</span>
@@ -53,7 +53,7 @@ export function AppNav() {
 
 export function BottomNav() {
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-30 border-t bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur sm:hidden">
+    <nav data-chrome className="fixed inset-x-0 bottom-0 z-30 border-t bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur sm:hidden">
       <div className="grid grid-cols-4">
         {items.map(({ to, label, icon: Icon }) => (
           <Link

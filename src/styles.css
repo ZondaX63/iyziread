@@ -138,6 +138,11 @@ html[data-font="dyslexic"] { --reader-font: "OpenDyslexic", "Atkinson Hyperlegib
   box-shadow: 0 0 24px -4px var(--glow);
 }
 
+/* Focus mode: hide app chrome while reading */
+html[data-focus] [data-chrome] {
+  display: none;
+}
+
 @layer base {
   * {
     border-color: var(--color-border);
