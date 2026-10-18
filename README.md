@@ -66,3 +66,18 @@ Building Windows and Android packages requires the respective toolchains (Rust, 
 ## License
 
 MIT
+
+## Otomatik sürüm (GitHub Actions)
+
+`.github/workflows/release.yml` her `v*` etiketinde (ör. `v1.0.0`) veya Actions sekmesinden elle çalıştırıldığında:
+
+- Windows `.exe` / `.msi`, macOS `.dmg`, Linux `.AppImage` / `.deb`
+- Android `.apk` (debug imzalı, doğrudan kurulabilir)
+
+dosyalarını derleyip GitHub **Releases** sayfasına ekler.
+
+```bash
+git tag v1.0.0 && git push origin v1.0.0
+```
+
+Masaüstü/mobil sürüm, `TAURI=1 bun run build && node scripts/prepare-tauri.mjs` ile üretilen statik `dist-tauri/` klasörünü kullanır.
