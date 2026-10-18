@@ -13,3 +13,4 @@
 - Offline-first SPA: all data lives in IndexedDB via Dexie (`src/lib/db.ts`); no server functions or backend, so the app can be wrapped by Tauri v2.
 - Reading rules (ORP, punctuation delays, WPM limits) live as pure functions in `src/lib/rsvp.ts` with tests in `src/test/rsvp.test.ts`; keep timing logic there, not in components.
 - EPUB/PDF parsers (`src/lib/parsers.ts`) are browser-only and must be dynamically imported from event handlers to stay out of SSR.
+- Achievements and personal bests are pure functions in `src/lib/achievements.ts` (tested in `src/test/features.test.ts`); they must scale with each user's own baseline and daily goal.
