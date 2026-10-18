@@ -69,14 +69,35 @@ jobs:
       - name: Build web app (static)
         run: bun run build && node scripts/prepare-tauri.mjs
         env: { TAURI: "1" }
-      - name: Build APK
+      - name: Build APK (release, per-ABI)
+        env:
+          CARGO_PROFILE_RELEASE_STRIP: "true"
+          CARGO_PROFILE_RELEASE_LTO: "true"
+          CARGO_PROFILE_RELEASE_OPT_LEVEL: "s"
+          CARGO_PROFILE_RELEASE_CODEGEN_UNITS: "1"
         run: |
           bun run tauri icon src-tauri/app-icon.png
           bun run tauri android init --ci
-          bun run tauri android build --apk --debug
+          bun run tauri android build --apk --split-per-abi --target aarch64 --target armv7
+      - name: Sign APKs
+        run: |
+          BT=$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)
+          keytool -genkeypair -v -keystore ks.jks -alias iyzi -keyalg RSA -keysize 2048 \
+            -validity 10000 -storepass iyzireader -keypass iyzireader -dname "CN=Iyzi Reader"
           mkdir -p out
-          find src-tauri/gen/android -name "*.apk" -exec cp {} out/IyziReader-android.apk \;
+          for f in $(find src-tauri/gen/android -name "*-release-unsigned.apk"); do
+            case "$f" in
+              *arm64*) name=IyziReader-android-arm64.apk ;;
+              *arm*) name=IyziReader-android-armv7.apk ;;
+              *) continue ;;
+            esac
+            "$BT/zipalign" -f 4 "$f" "out/aligned.apk"
+            "$BT/apksigner" sign --ks ks.jks --ks-pass pass:iyzireader --key-pass pass:iyzireader \
+              --out "out/$name" out/aligned.apk
+            rm out/aligned.apk
+          done
+          ls -lh out
       - uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.ref_type == 'tag' && github.ref_name || 'latest' }}
-          files: out/IyziReader-android.apk
+          files: out/*.apk
