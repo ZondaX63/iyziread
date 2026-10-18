@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as LibraryRouteImport } from './routes/library'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as StatsRouteImport } from './routes/stats'
 import { Route as ReaderIndexRouteImport } from './routes/reader.index'
@@ -18,6 +19,11 @@ import { Route as ReaderBookIdRouteImport } from './routes/reader.$bookId'
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LibraryRoute = LibraryRouteImport.update({
+  id: '/library',
+  path: '/library',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SettingsRoute = SettingsRouteImport.update({
@@ -43,6 +49,7 @@ const ReaderBookIdRoute = ReaderBookIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/library': typeof LibraryRoute
   '/settings': typeof SettingsRoute
   '/stats': typeof StatsRoute
   '/reader/$bookId': typeof ReaderBookIdRoute
@@ -50,6 +57,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/library': typeof LibraryRoute
   '/settings': typeof SettingsRoute
   '/stats': typeof StatsRoute
   '/reader/$bookId': typeof ReaderBookIdRoute
@@ -58,6 +66,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/library': typeof LibraryRoute
   '/settings': typeof SettingsRoute
   '/stats': typeof StatsRoute
   '/reader/$bookId': typeof ReaderBookIdRoute
@@ -65,14 +74,23 @@ export interface FileRoutesById {
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/settings' | '/stats' | '/reader/$bookId' | '/reader/'
+  fullPaths:
+    '/' | '/library' | '/settings' | '/stats' | '/reader/$bookId' | '/reader/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/settings' | '/stats' | '/reader/$bookId' | '/reader'
-  id: '__root__' | '/' | '/settings' | '/stats' | '/reader/$bookId' | '/reader/'
+  to: '/' | '/library' | '/settings' | '/stats' | '/reader/$bookId' | '/reader'
+  id:
+    | '__root__'
+    | '/'
+    | '/library'
+    | '/settings'
+    | '/stats'
+    | '/reader/$bookId'
+    | '/reader/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  LibraryRoute: typeof LibraryRoute
   SettingsRoute: typeof SettingsRoute
   StatsRoute: typeof StatsRoute
   ReaderBookIdRoute: typeof ReaderBookIdRoute
@@ -86,6 +104,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/library': {
+      id: '/library'
+      path: '/library'
+      fullPath: '/library'
+      preLoaderRoute: typeof LibraryRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/settings': {
@@ -121,6 +146,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  LibraryRoute: LibraryRoute,
   SettingsRoute: SettingsRoute,
   StatsRoute: StatsRoute,
   ReaderBookIdRoute: ReaderBookIdRoute,

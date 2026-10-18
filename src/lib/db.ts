@@ -43,6 +43,7 @@ export interface Settings {
   chunk: 1 | 2 | 3;
   wpm: number;
   dailyGoalMin: number;
+  showSummary: boolean;
   lastBookId?: string;
   seeded?: boolean;
 }
@@ -56,6 +57,7 @@ export const DEFAULT_SETTINGS: Settings = {
   chunk: 1,
   wpm: 300,
   dailyGoalMin: 15,
+  showSummary: true,
 };
 
 class IyziDB extends Dexie {

@@ -71,7 +71,7 @@ function StatsPage() {
       </div>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {cards.map((c) => (
-          <div key={c.label} className="rounded-xl border bg-card p-5">
+          <div key={c.label} className="animate-fade-up rounded-xl border bg-card p-5">
             <p className="text-sm text-muted-foreground">{c.label}</p>
             <p className="mt-1 font-display text-3xl font-bold text-primary">{c.value}</p>
           </div>

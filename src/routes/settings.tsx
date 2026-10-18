@@ -31,7 +31,7 @@ const swatches = ["#ef4444", "#39ff14", "#f59e0b", "#3b82f6", "#ec4899", "#fffff
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <section className="rounded-xl border bg-card p-5">
+    <section className="animate-fade-up rounded-xl border bg-card p-5">
       <h2 className="mb-4 font-semibold">{title}</h2>
       {children}
     </section>
@@ -105,6 +105,13 @@ function SettingsPage() {
             <span className="block text-sm text-muted-foreground">1.5× pause on commas, 2× on sentence endings</span>
           </span>
           <Switch checked={s.punctuation} onCheckedChange={(v) => updateSettings({ punctuation: v })} />
+        </label>
+        <label className="mt-4 flex items-center justify-between gap-4">
+          <span>
+            Session summary
+            <span className="block text-sm text-muted-foreground">Show an animated recap after each reading session</span>
+          </span>
+          <Switch checked={s.showSummary} onCheckedChange={(v) => updateSettings({ showSummary: v })} />
         </label>
       </Section>
       <Section title="Backup">

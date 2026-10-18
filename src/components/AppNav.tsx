@@ -1,10 +1,11 @@
 import { Link } from "@tanstack/react-router";
-import { BarChart3, BookOpen, Library, Moon, Settings as SettingsIcon, Sun, Coffee } from "lucide-react";
+import { Home, BarChart3, BookOpen, Library, Moon, Settings as SettingsIcon, Sun, Coffee } from "lucide-react";
 import { useSettings } from "@/hooks/use-settings";
 import { updateSettings, type Theme } from "@/lib/db";
 
 const items = [
-  { to: "/", label: "Library", icon: Library },
+  { to: "/", label: "Home", icon: Home },
+  { to: "/library", label: "Library", icon: Library },
   { to: "/reader", label: "Reader", icon: BookOpen },
   { to: "/stats", label: "Stats", icon: BarChart3 },
   { to: "/settings", label: "Settings", icon: SettingsIcon },
@@ -30,7 +31,7 @@ export function AppNav() {
               key={to}
               to={to}
               activeOptions={{ exact: to === "/" }}
-              className="flex items-center gap-2 rounded-md px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+              className="flex items-center gap-2 rounded-md px-3 py-1.5 text-sm text-muted-foreground transition-all duration-200 hover:bg-secondary hover:text-foreground"
               activeProps={{ className: "bg-accent text-accent-foreground hover:bg-accent hover:text-accent-foreground" }}
             >
               <Icon className="h-4 w-4" />
@@ -54,16 +55,16 @@ export function AppNav() {
 export function BottomNav() {
   return (
     <nav data-chrome className="fixed inset-x-0 bottom-0 z-30 border-t bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur sm:hidden">
-      <div className="grid grid-cols-4">
+      <div className="grid grid-cols-5">
         {items.map(({ to, label, icon: Icon }) => (
           <Link
             key={to}
             to={to}
             activeOptions={{ exact: to === "/" }}
-            className="flex flex-col items-center gap-1 py-2.5 text-xs text-muted-foreground"
-            activeProps={{ className: "text-primary" }}
+            className="group flex flex-col items-center gap-1 py-2.5 text-[11px] text-muted-foreground transition-colors"
+            activeProps={{ className: "text-primary [&_svg]:-translate-y-0.5 [&_svg]:scale-110" }}
           >
-            <Icon className="h-5 w-5" />
+            <Icon className="h-5 w-5 transition-transform duration-300" />
             {label}
           </Link>
         ))}
