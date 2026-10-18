@@ -11,8 +11,11 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as LibraryRouteImport } from './routes/library'
+import { Route as PasteRouteImport } from './routes/paste'
+import { Route as QuotesRouteImport } from './routes/quotes'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as StatsRouteImport } from './routes/stats'
+import { Route as TrainRouteImport } from './routes/train'
 import { Route as ReaderIndexRouteImport } from './routes/reader.index'
 import { Route as ReaderBookIdRouteImport } from './routes/reader.$bookId'
 
@@ -26,6 +29,16 @@ const LibraryRoute = LibraryRouteImport.update({
   path: '/library',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PasteRoute = PasteRouteImport.update({
+  id: '/paste',
+  path: '/paste',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const QuotesRoute = QuotesRouteImport.update({
+  id: '/quotes',
+  path: '/quotes',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SettingsRoute = SettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
@@ -34,6 +47,11 @@ const SettingsRoute = SettingsRouteImport.update({
 const StatsRoute = StatsRouteImport.update({
   id: '/stats',
   path: '/stats',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TrainRoute = TrainRouteImport.update({
+  id: '/train',
+  path: '/train',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ReaderIndexRoute = ReaderIndexRouteImport.update({
@@ -50,16 +68,22 @@ const ReaderBookIdRoute = ReaderBookIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/library': typeof LibraryRoute
+  '/paste': typeof PasteRoute
+  '/quotes': typeof QuotesRoute
   '/settings': typeof SettingsRoute
   '/stats': typeof StatsRoute
+  '/train': typeof TrainRoute
   '/reader/$bookId': typeof ReaderBookIdRoute
   '/reader/': typeof ReaderIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/library': typeof LibraryRoute
+  '/paste': typeof PasteRoute
+  '/quotes': typeof QuotesRoute
   '/settings': typeof SettingsRoute
   '/stats': typeof StatsRoute
+  '/train': typeof TrainRoute
   '/reader/$bookId': typeof ReaderBookIdRoute
   '/reader': typeof ReaderIndexRoute
 }
@@ -67,23 +91,46 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/library': typeof LibraryRoute
+  '/paste': typeof PasteRoute
+  '/quotes': typeof QuotesRoute
   '/settings': typeof SettingsRoute
   '/stats': typeof StatsRoute
+  '/train': typeof TrainRoute
   '/reader/$bookId': typeof ReaderBookIdRoute
   '/reader/': typeof ReaderIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    '/' | '/library' | '/settings' | '/stats' | '/reader/$bookId' | '/reader/'
+    | '/'
+    | '/library'
+    | '/paste'
+    | '/quotes'
+    | '/settings'
+    | '/stats'
+    | '/train'
+    | '/reader/$bookId'
+    | '/reader/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/library' | '/settings' | '/stats' | '/reader/$bookId' | '/reader'
+  to:
+    | '/'
+    | '/library'
+    | '/paste'
+    | '/quotes'
+    | '/settings'
+    | '/stats'
+    | '/train'
+    | '/reader/$bookId'
+    | '/reader'
   id:
     | '__root__'
     | '/'
     | '/library'
+    | '/paste'
+    | '/quotes'
     | '/settings'
     | '/stats'
+    | '/train'
     | '/reader/$bookId'
     | '/reader/'
   fileRoutesById: FileRoutesById
@@ -91,8 +138,11 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   LibraryRoute: typeof LibraryRoute
+  PasteRoute: typeof PasteRoute
+  QuotesRoute: typeof QuotesRoute
   SettingsRoute: typeof SettingsRoute
   StatsRoute: typeof StatsRoute
+  TrainRoute: typeof TrainRoute
   ReaderBookIdRoute: typeof ReaderBookIdRoute
   ReaderIndexRoute: typeof ReaderIndexRoute
 }
@@ -113,6 +163,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LibraryRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/paste': {
+      id: '/paste'
+      path: '/paste'
+      fullPath: '/paste'
+      preLoaderRoute: typeof PasteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/quotes': {
+      id: '/quotes'
+      path: '/quotes'
+      fullPath: '/quotes'
+      preLoaderRoute: typeof QuotesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/settings': {
       id: '/settings'
       path: '/settings'
@@ -125,6 +189,13 @@ declare module '@tanstack/react-router' {
       path: '/stats'
       fullPath: '/stats'
       preLoaderRoute: typeof StatsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/train': {
+      id: '/train'
+      path: '/train'
+      fullPath: '/train'
+      preLoaderRoute: typeof TrainRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/reader/': {
@@ -147,8 +218,11 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   LibraryRoute: LibraryRoute,
+  PasteRoute: PasteRoute,
+  QuotesRoute: QuotesRoute,
   SettingsRoute: SettingsRoute,
   StatsRoute: StatsRoute,
+  TrainRoute: TrainRoute,
   ReaderBookIdRoute: ReaderBookIdRoute,
   ReaderIndexRoute: ReaderIndexRoute,
 }
