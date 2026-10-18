@@ -4,7 +4,7 @@ export interface Book {
   id: string;
   title: string;
   author: string;
-  source: "seed" | "epub" | "pdf";
+  source: "seed" | "epub" | "pdf" | "paste";
   toc: string[];
   chapterWords: number[];
   totalWords: number;
@@ -31,6 +31,15 @@ export interface Session {
   bookId: string;
 }
 
+export interface Quote {
+  id?: number;
+  bookId: string;
+  bookTitle: string;
+  author: string;
+  text: string;
+  createdAt: number;
+}
+
 export type Theme = "dark" | "light" | "sepia";
 export type ReaderFont = "atkinson" | "literata" | "grotesk" | "mono" | "dyslexic";
 
@@ -44,6 +53,13 @@ export interface Settings {
   wpm: number;
   dailyGoalMin: number;
   showSummary: boolean;
+  rampUp: boolean;
+  eyeRest: boolean;
+  reminder: boolean;
+  reminderTime: string; // HH:mm
+  reminderLastSent?: string;
+  seenAchievements?: string[];
+  schulteBest?: number; // ms
   lastBookId?: string;
   seeded?: boolean;
 }
@@ -58,6 +74,10 @@ export const DEFAULT_SETTINGS: Settings = {
   wpm: 300,
   dailyGoalMin: 15,
   showSummary: true,
+  rampUp: false,
+  eyeRest: true,
+  reminder: false,
+  reminderTime: "20:00",
 };
 
 class IyziDB extends Dexie {
@@ -65,6 +85,7 @@ class IyziDB extends Dexie {
   chapters!: Table<Chapter, string>;
   sessions!: Table<Session, number>;
   settings!: Table<Settings, string>;
+  quotes!: Table<Quote, number>;
   constructor() {
     super("iyzi-reader");
     this.version(1).stores({
@@ -73,6 +94,7 @@ class IyziDB extends Dexie {
       sessions: "++id, date, bookId",
       settings: "key",
     });
+    this.version(2).stores({ quotes: "++id, bookId, createdAt" });
   }
 }
 
@@ -117,14 +139,16 @@ export async function exportBackup() {
     chapters: await db.chapters.toArray(),
     sessions: await db.sessions.toArray(),
     settings: await db.settings.toArray(),
+    quotes: await db.quotes.toArray(),
   });
 }
 
 export async function importBackup(json: string) {
   const data = JSON.parse(json);
   if (data.app !== "iyzi-reader") throw new Error("Not an Iyzi Reader backup");
-  await db.transaction("rw", [db.books, db.chapters, db.sessions, db.settings], async () => {
-    await Promise.all([db.books.clear(), db.chapters.clear(), db.sessions.clear(), db.settings.clear()]);
+  await db.transaction("rw", [db.books, db.chapters, db.sessions, db.settings, db.quotes], async () => {
+    await Promise.all([db.books.clear(), db.chapters.clear(), db.sessions.clear(), db.settings.clear(), db.quotes.clear()]);
+    await db.quotes.bulkPut(data.quotes ?? []);
     await db.books.bulkPut(data.books ?? []);
     await db.chapters.bulkPut(data.chapters ?? []);
     await db.sessions.bulkPut(data.sessions ?? []);
