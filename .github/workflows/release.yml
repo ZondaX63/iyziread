@@ -32,7 +32,7 @@ jobs:
         run: bun run build && node scripts/prepare-tauri.mjs
         env: { TAURI: "1" }
       - name: Icons
-        run: bunx @tauri-apps/cli@2 icon src-tauri/app-icon.jpg
+        run: bunx @tauri-apps/cli@2 icon src-tauri/app-icon.png
       - uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -66,7 +66,7 @@ jobs:
         env:
           NDK_HOME: ${{ env.ANDROID_HOME }}/ndk/27.0.12077973
         run: |
-          bunx @tauri-apps/cli@2 icon src-tauri/app-icon.jpg
+          bunx @tauri-apps/cli@2 icon src-tauri/app-icon.png
           bunx @tauri-apps/cli@2 android init --ci
           bunx @tauri-apps/cli@2 android build --apk --debug
           mkdir -p out
