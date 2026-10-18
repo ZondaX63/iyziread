@@ -15,6 +15,7 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { AppNav, BottomNav } from "@/components/AppNav";
 import { AchievementWatcher, ReminderWatcher, ShortcutsDialog } from "@/components/GlobalHelpers";
+import { SessionSummaryHost } from "@/components/SessionSummary";
 import { Toaster } from "@/components/ui/sonner";
 import { useSettings } from "@/hooks/use-settings";
 import { seedIfNeeded } from "@/lib/seed";
@@ -151,7 +152,7 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <ThemeSync />
       <AppNav />
-      <main className="mx-auto max-w-6xl px-4 pb-24 pt-6 sm:py-8">
+      <main className="mx-auto max-w-6xl px-4 pb-24 pt-6 sm:py-8 [html[data-focus]_&]:pt-[calc(env(safe-area-inset-top)+1.5rem)]">
         <PageTransition />
       </main>
       <BottomNav />
@@ -159,6 +160,7 @@ function RootComponent() {
       <ShortcutsDialog />
       <AchievementWatcher />
       <ReminderWatcher />
+      <SessionSummaryHost />
     </QueryClientProvider>
   );
 }

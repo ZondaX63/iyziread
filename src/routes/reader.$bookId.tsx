@@ -8,7 +8,7 @@ import { db, updateSettings, type Book } from "@/lib/db";
 import { useSettings } from "@/hooks/use-settings";
 import { useRsvpEngine } from "@/hooks/use-rsvp-engine";
 import { clampWpm, EYE_REST_AFTER_MS, EYE_REST_SECONDS, formatMinutes, MAX_WPM, minutesLeft, MIN_WPM, sentenceAt, tokenize } from "@/lib/rsvp";
-import { SessionSummary, type SummaryData } from "@/components/SessionSummary";
+import { SUMMARY_EVENT, type SummaryData } from "@/components/SessionSummary";
 import { RsvpDisplay } from "@/components/reader/RsvpDisplay";
 import { VirtualText } from "@/components/reader/TextViews";
 import { Button } from "@/components/ui/button";
@@ -99,6 +99,18 @@ function ChapterReader({ book, chapter, text, mode, onNextChapter }: { book: Boo
   }, []);
 
   const eng = useRsvpEngine(words, { wpm: s.wpm, chunk, punctuation: s.punctuation, ramp: s.rampUp, initial, onSession });
+  // Declared after the engine so its cleanup (which records the last segment) runs first.
+  useEffect(() => () => {
+    const { ms, words: w, startedAt } = acc.current;
+    acc.current = { ms: 0, words: 0, startedAt: 0 };
+    if (ms < 3000 || w <= 0) return;
+    const wpm = Math.round(w / (ms / 60000));
+    db.sessions.add({ date: format(new Date(startedAt), "yyyy-MM-dd"), startedAt, durationMs: ms, words: w, wpm, bookId: book.id });
+    if (showSummaryRef.current) {
+      const data: SummaryData = { durationMs: ms, words: w, wpm };
+      window.dispatchEvent(new CustomEvent(SUMMARY_EVENT, { detail: data }));
+    }
+  }, [book.id]);
   const setWpm = (w: number) => updateSettings({ wpm: clampWpm(w) });
 
   // persist progress
@@ -278,7 +290,6 @@ function ChapterReader({ book, chapter, text, mode, onNextChapter }: { book: Boo
           </div>
         </div>
       )}
-      {summary && <SessionSummary data={summary} onClose={() => setSummary(null)} />}
       {atEnd && chapter < book.toc.length - 1 && (
         <div className="text-center"><Button onClick={onNextChapter}>Next chapter →</Button></div>
       )}

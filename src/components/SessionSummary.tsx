@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Clock, Gauge, Sparkles, Type, X } from "lucide-react";
 import { CountUp } from "./CountUp";
 
@@ -6,6 +6,19 @@ export interface SummaryData {
   durationMs: number;
   words: number;
   wpm: number;
+}
+
+export const SUMMARY_EVENT = "iyzi:session-summary";
+
+/** Mounted once at the root so the recap survives leaving the reader. */
+export function SessionSummaryHost() {
+  const [data, setData] = useState<SummaryData | null>(null);
+  useEffect(() => {
+    const on = (e: Event) => setData((e as CustomEvent<SummaryData>).detail);
+    window.addEventListener(SUMMARY_EVENT, on);
+    return () => window.removeEventListener(SUMMARY_EVENT, on);
+  }, []);
+  return data ? <SessionSummary data={data} onClose={() => setData(null)} /> : null;
 }
 
 const cheers = ["Great focus!", "You're on fire!", "Speed demon!", "Brain gains!", "Keep it rolling!"];
