@@ -14,3 +14,4 @@
 - Reading rules (ORP, punctuation delays, WPM limits) live as pure functions in `src/lib/rsvp.ts` with tests in `src/test/rsvp.test.ts`; keep timing logic there, not in components.
 - EPUB/PDF parsers (`src/lib/parsers.ts`) are browser-only and must be dynamically imported from event handlers to stay out of SSR.
 - Achievements and personal bests are pure functions in `src/lib/achievements.ts` (tested in `src/test/features.test.ts`); they must scale with each user's own baseline and daily goal.
+- Native builds: `TAURI=1` switches vite to SPA mode; `scripts/prepare-tauri.mjs` copies the static output to `dist-tauri/` for `src-tauri/`, and `.github/workflows/release.yml` publishes installers on `v*` tags — keep the web build static-exportable.
